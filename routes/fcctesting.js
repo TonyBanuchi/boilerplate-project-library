@@ -27,15 +27,15 @@
 
 'use strict';
 
-const cors = require('cors');
-const fs = require('fs');
-const runner = require('../test-runner');
+import cors from 'cors';
+import fs from 'fs';
+import { default as runner } from '../test-runner.js';
 
-module.exports = function (app) {
+function fccTestingRoutes(app) {
 
   app.route('/_api/server.js')
     .get(function(req, res, next) {
-      console.log('requested');
+      console.log('requested server file');
       fs.readFile(__dirname + '/server.js', function(err, data) {
         if(err) return next(err);
         res.send(data.toString());
@@ -43,7 +43,7 @@ module.exports = function (app) {
     });
   app.route('/_api/routes/api.js')
     .get(function(req, res, next) {
-      console.log('requested');
+      console.log('requested routing file');
       fs.readFile(__dirname + '/routes/api.js', function(err, data) {
         if(err) return next(err);
         res.type('txt').send(data.toString());
@@ -51,7 +51,7 @@ module.exports = function (app) {
     });
 
   app.get('/_api/get-tests', cors(), function(req, res, next){
-    console.log('requested');
+    console.log('requested tests file');
     if(process.env.NODE_ENV === 'test') return next();
     res.json({status: 'unavailable'});
   },
@@ -92,3 +92,5 @@ function testFilter(tests, type, n) {
   }
   return out;
 }
+
+export default { fccTestingRoutes };

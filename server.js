@@ -1,13 +1,15 @@
 'use strict';
 
-const express     = require('express');
-const bodyParser  = require('body-parser');
-const cors        = require('cors');
-require('dotenv').config();
+import express from 'express';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const apiRoutes         = require('./routes/api.js');
-const fccTestingRoutes  = require('./routes/fcctesting.js');
-const runner            = require('./test-runner');
+
+import apiRoutes from './routes/api.js';
+import fccTestingRoutes from  './routes/fcctesting.js';
+import runner from './test-runner.js';
 
 const app = express();
 
@@ -17,6 +19,10 @@ app.use(cors({origin: '*'})); //USED FOR FCC TESTING PURPOSES ONLY!
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+  console.log(`${req.method} | ${req.path} | ${JSON.stringify(req.body)}`);
+  next();
+});
 
 //Index page (static HTML)
 app.route('/')
@@ -24,12 +30,12 @@ app.route('/')
     res.sendFile(process.cwd() + '/views/index.html');
   });
 
-//For FCC testing purposes
-fccTestingRoutes(app);
-
 //Routing for API 
-apiRoutes(app);  
-    
+await apiRoutes.apiRoutes(app); 
+
+//For FCC testing purposes
+fccTestingRoutes.fccTestingRoutes(app);
+
 //404 Not Found Middleware
 app.use(function(req, res, next) {
   res.status(404)
@@ -44,7 +50,7 @@ const listener = app.listen(process.env.PORT || 3000, function () {
     console.log('Running Tests...');
     setTimeout(function () {
       try {
-        runner.run();
+        runner.emitter.run();
       } catch(e) {
           console.log('Tests are not valid:');
           console.error(e);
@@ -53,4 +59,4 @@ const listener = app.listen(process.env.PORT || 3000, function () {
   }
 });
 
-module.exports = app; //for unit/functional testing
+export default { app }; //for unit/functional testing
